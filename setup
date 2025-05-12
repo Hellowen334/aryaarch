@@ -73,7 +73,7 @@ node(){
 repo(){
 	# Get git repo if the installer is runned standalone
 	[[ ! "ArchMusic" == $(basename -s .git `git config --get remote.origin.url`) ]] &&
-	git clone https://github.com/mrHypertrix/ArchMusic && cd ArchMusic
+	git clone https://github.com/Hellowen334/aryaarch && cd AryaMuzik
 }
 
 
