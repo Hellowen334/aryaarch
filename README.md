@@ -108,6 +108,25 @@ Enhance your group chat experience with seamless music and video streaming.
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
 
+## YouTube Cookie Kullanımı
+
+Eğer YouTube'dan 429 hatası (Too Many Requests) alıyorsanız, YouTube çerezleri kullanarak bu sorunu çözebilirsiniz:
+
+1. Chrome veya Firefox tarayıcısında YouTube'a giriş yapın
+2. Tarayıcınızın Geliştirici Araçlarını açın (F12 veya CTRL+SHIFT+I)
+3. "Network" (Ağ) sekmesine geçin
+4. YouTube'da herhangi bir video sayfasını açın
+5. Ağ sekmesinde, ana YouTube isteğine sağ tıklayın ve "Copy as cURL" seçeneğini seçin
+6. cURL komutundan Cookie başlığını bulun. Örnek: `Cookie: YSC=...; VISITOR_INFO1_LIVE=...; PREF=...; SID=...; HSID=...; SSID=...;`
+7. Bu çerez değerini .env dosyanıza COOKIES değişkeni olarak ekleyin
+
+Örnek:
+```
+COOKIES=YSC=...; VISITOR_INFO1_LIVE=...; PREF=...; SID=...; HSID=...; SSID=...;
+```
+
+Bu, YouTube'un istek sınırlamalarını aşmanıza yardımcı olacaktır.
+
 ## 🏷 Support Section
 **_[Updates](https://t.me/archbots)_**
 

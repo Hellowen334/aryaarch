@@ -4,6 +4,7 @@ from typing import Union
 from pyrogram.types import Message
 from pyrogram.enums import MessageEntityType
 from youtubesearchpython.__future__ import VideosSearch
+import config
 
 
 def time_to_seconds(time):
@@ -31,9 +32,14 @@ async def get_stream_url(query, video=False):
     api_url = "http://46.250.243.87:1470/youtube"
     api_key = "1a873582a7c83342f961cc0a177b2b26"
     
+    # Try to use cookies if they are defined in config
+    headers = {}
+    if hasattr(config, 'COOKIES') and config.COOKIES:
+        headers["Cookie"] = config.COOKIES
+    
     async with httpx.AsyncClient(timeout=60) as client:
         params = {"query": query, "video": video, "api_key": api_key}
-        response = await client.get(api_url, params=params)
+        response = await client.get(api_url, params=params, headers=headers)
         if response.status_code != 200:
             return ""
         info = response.json()
@@ -48,6 +54,10 @@ class YouTubeAPI:
         self.status = "https://www.youtube.com/oembed?url="
         self.listbase = "https://youtube.com/playlist?list="
         self.reg = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+        # Initialize cookies if they exist in config
+        self.cookies = None
+        if hasattr(config, 'COOKIES') and config.COOKIES:
+            self.cookies = config.COOKIES
 
     async def exists(self, link: str, videoid: Union[bool, str] = None):
         if videoid:
@@ -142,14 +152,29 @@ class YouTubeAPI:
             link = self.listbase + link
         if "&" in link:
             link = link.split("&")[0]
-        playlist = await shell_cmd(
-            f"yt-dlp -i --get-id --flat-playlist --playlist-end {limit} --skip-download {link}"
-        )
+        
+        cmd = f"yt-dlp -i --get-id --flat-playlist --playlist-end {limit} --skip-download"
+        
+        # Add cookies to yt-dlp command if available
+        if self.cookies:
+            cookies_file = "youtube_cookies.txt"
+            with open(cookies_file, "w") as f:
+                f.write(self.cookies)
+            cmd += f" --cookies {cookies_file}"
+            
+        cmd += f" {link}"
+        
+        playlist = await shell_cmd(cmd)
         try:
             result = playlist.split("\n")
             for key in result:
                 if key == "":
                     result.remove(key)
+            
+            # Clean up temporary cookies file if it was created
+            if self.cookies and os.path.exists("youtube_cookies.txt"):
+                os.remove("youtube_cookies.txt")
+                
         except:
             result = []
         return result
@@ -180,7 +205,13 @@ class YouTubeAPI:
             link = self.base + link
         if "&" in link:
             link = link.split("&")[0]
+            
         ytdl_opts = {"quiet": True}
+        
+        # Add cookies to yt-dlp options if available
+        if self.cookies:
+            ytdl_opts["cookies"] = self.cookies
+            
         ydl = yt_dlp.YoutubeDL(ytdl_opts)
         with ydl:
             formats_available = []
@@ -253,6 +284,11 @@ class YouTubeAPI:
                 "quiet": True,
                 "no_warnings": True,
             }
+            
+            # Add cookies to yt-dlp options if available
+            if self.cookies:
+                ydl_optssx["cookies"] = self.cookies
+                
             x = yt_dlp.YoutubeDL(ydl_optssx)
             info = x.extract_info(link, False)
             xyz = os.path.join("downloads", f"{info['id']}.{info['ext']}")
@@ -270,6 +306,11 @@ class YouTubeAPI:
                 "quiet": True,
                 "no_warnings": True,
             }
+            
+            # Add cookies to yt-dlp options if available
+            if self.cookies:
+                ydl_optssx["cookies"] = self.cookies
+                
             x = yt_dlp.YoutubeDL(ydl_optssx)
             info = x.extract_info(link, False)
             xyz = os.path.join("downloads", f"{info['id']}.{info['ext']}")
@@ -291,6 +332,11 @@ class YouTubeAPI:
                 "prefer_ffmpeg": True,
                 "merge_output_format": "mp4",
             }
+            
+            # Add cookies to yt-dlp options if available
+            if self.cookies:
+                ydl_optssx["cookies"] = self.cookies
+                
             x = yt_dlp.YoutubeDL(ydl_optssx)
             x.download([link])
 
@@ -312,6 +358,11 @@ class YouTubeAPI:
                     }
                 ],
             }
+            
+            # Add cookies to yt-dlp options if available
+            if self.cookies:
+                ydl_optssx["cookies"] = self.cookies
+                
             x = yt_dlp.YoutubeDL(ydl_optssx)
             x.download([link])
 
